@@ -6,6 +6,33 @@
 <title>percall — pay per call. agent data on early chains.</title>
 <meta name="description" content="Keyless Arc & MegaETH JSON-RPC + early-chain data for AI agents. Pay per call in USDC via x402. No API key, no project approval, prepaid credits.">
 <meta name="keywords" content="x402, MCP server, Arc, chainId 5042, MegaETH, 4326, pay per call, agent payments, USDC, JSON-RPC, no API key, stablecoin chain, early chain data, token deployments, AI agent infrastructure">
+<link rel="canonical" href="https://percallio.github.io/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0e14'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%234ade80' text-anchor='middle'%3Ep%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="percall">
+<meta property="og:title" content="percall — pay per call. agent data on early chains.">
+<meta property="og:description" content="Keyless Arc JSON-RPC + early-chain data for AI agents. Pay per call in USDC via x402. No API key. MCP server: one-line install.">
+<meta property="og:url" content="https://percallio.github.io/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="percall — pay per call for early-chain data (x402 + MCP)">
+<meta name="twitter:description" content="Keyless Arc JSON-RPC + agent data. USDC per call, no API key, free 50/day, MCP one-liner.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {"@type": "Organization", "@id": "https://percallio.github.io/#org", "name": "percall", "url": "https://percallio.github.io/", "description": "Pay-per-call JSON-RPC and early-chain data for AI agents on new chains (Arc, MegaETH). USDC via x402, no API key.", "sameAs": ["https://github.com/percallio", "https://x.com/percalliox402"]},
+    {"@type": "WebSite", "url": "https://percallio.github.io/", "name": "percall", "publisher": {"@id": "https://percallio.github.io/#org"}},
+    {"@type": "SoftwareApplication", "name": "percall-mcp", "operatingSystem": "any", "applicationCategory": "DeveloperApplication", "url": "https://github.com/percallio/percall-mcp", "description": "Zero-dependency MCP server for percall: Arc (chainId 5042) block data, eth_call, receipts, logs, balances. Automatic x402 USDC payment per call.", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free tier: 50 calls/day per wallet; then $0.002-$0.005 per call in USDC"}},
+    {"@type": "Product", "name": "Percall Arc agent data & keyless RPC", "description": "Keyless JSON-RPC endpoint for AI agents on Arc (chainId 5042, Circle's stablecoin chain). Per-call pricing in native USDC via the x402 HTTP 402 protocol and EIP-3009 transferWithAuthorization. Free tier of 50 calls/day per wallet; prepaid credits via /topup.", "brand": {"@type": "Brand", "name": "percall"}, "offers": {"@type": "Offer", "priceSpecification": [{"@type": "UnitPriceSpecification", "price": "0.002", "priceCurrency": "USD", "unitText": "light call"}, {"@type": "UnitPriceSpecification", "price": "0.003", "priceCurrency": "USD", "unitText": "standard call"}, {"@type": "UnitPriceSpecification", "price": "0.005", "priceCurrency": "USD", "unitText": "heavy call"}]}},
+    {"@type": "FAQPage", "mainEntity": [
+      {"@type": "Question", "name": "What is x402?", "acceptedAnswer": {"@type": "Answer", "text": "x402 is an open payments protocol built on the HTTP 402 'Payment Required' status code. The buyer signs a token authorization (on Ethereum chains, a USDC transferWithAuthorization per EIP-3009); the seller verifies and settles on-chain. percall self-facilitates: no middleman custody, payment goes directly to a public vault for exactly the amount authorized."}},
+      {"@type": "Question", "name": "Why would I pay for RPC when free endpoints exist?", "acceptedAnswer": {"@type": "Answer", "text": "Free RPCs require API keys, project approvals and rate limits — friction that agent frameworks must solve. On new chains free endpoints are scarce and flaky. x402 makes capability equal to holding a wallet: no account, no key, no approval. Per-call billing means agents only pay for what they use, and prepaid credits make steady workloads nearly gas-free."}},
+      {"@type": "Question", "name": "What is Arc (chainId 5042)?", "acceptedAnswer": {"@type": "Answer", "text": "Arc is Circle's EVM chain where USDC is the native gas token. Sub-second blocks, native USDC for both data payments and gas, no wrapping or bridging. percall is the first pay-per-call agent endpoint on Arc."}},
+      {"@type": "Question", "name": "How do I install the percall MCP server?", "acceptedAnswer": {"@type": "Answer", "text": "percall-mcp is a zero-dependency Python stdio MCP server. Add it to your MCP client config (e.g. Claude Desktop) with the X402_MCP_URL and your Arc wallet key; it exposes 6 tools (block number, eth_call, receipt, logs, balance, free raw) and pays per call automatically via x402."}}
+    ]}
+  ]
+}
+</script>
 <style>
 :root { --bg: #0a0e14; --panel: #111722; --line: #1e2a3a; --txt: #d7e1ee; --dim: #7d8fa5; --acc: #4ade80; --acc2: #fbbf24; }
 * { margin: 0; padding: 0; box-sizing: border-box; }

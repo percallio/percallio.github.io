@@ -1,0 +1,33 @@
+# percall
+
+> Pay-per-call JSON-RPC and early-chain data for AI agents. USDC via x402. No API key.
+> percall 是面向 AI agent 的按次计费 RPC + 新链数据服务，USDC 按次支付（x402 协议），无需 API key。
+
+## What it is
+
+- **Keyless RPC for agents**: JSON-RPC endpoint on **Arc** (chainId 5042, Circle's USDC-native EVM chain). Agents pay per call in USDC using the x402 HTTP 402 protocol (EIP-3009 transferWithAuthorization). No account, no API key, no rate-limit approval.
+- **MCP server**: `percall-mcp` — zero-dependency Python stdio MCP server (6 tools), one-line install in Claude Desktop / any MCP client.
+- **Pricing**: light call $0.002, standard $0.003, heavy (getlogs/trace) $0.005. Free tier: 50 calls/day per wallet. Prepaid credits via `/topup` (one USDC transferWithAuthorization per week instead of per call — ~92% gas savings).
+- **Early-chain data (planned)**: first token deployments (`/early`), deployer alerts (`/alerts`), contract audit-lite (`/audit-lite`) — the data agents need on chains days old.
+- **Roadmap chains**: MegaETH (chainId 4326) and the next stablecoin/EVM chain, same codebase parameterized per chain.
+
+## Endpoints
+
+- `POST /arc/` — Arc mainnet JSON-RPC (402-priced per method tier)
+- `POST /topup` — prepaid credits (x402 TWA, validBefore ≤ 7d)
+- `GET /stats` — public live stats (calls, revenue, uptime)
+- `GET /health` — liveness
+
+Live status: https://percallio.github.io/ · Site: https://percallio.github.io/
+
+## Install (MCP)
+
+See https://github.com/percallio/percall-mcp (Claude Desktop / Cursor / any MCP client config snippet).
+
+## Links
+
+- Website: https://percallio.github.io/
+- MCP server: https://github.com/percallio/percall-mcp
+- GitHub: https://github.com/percallio
+- X: https://x.com/percalliox402
+- Protocol: x402 (402payments / x402 repo on GitHub) · Bazaar (x402 marketplace, service listed)
