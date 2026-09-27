@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>percall — pay per call. agent data on early chains.</title>
+<meta name="description" content="Keyless Arc & MegaETH JSON-RPC + early-chain data for AI agents. Pay per call in USDC via x402. No API key, no project approval, prepaid credits.">
+<meta name="keywords" content="x402, MCP server, Arc, chainId 5042, MegaETH, 4326, pay per call, agent payments, USDC, JSON-RPC, no API key, stablecoin chain, early chain data, token deployments, AI agent infrastructure">
+<style>
+:root { --bg: #0a0e14; --panel: #111722; --line: #1e2a3a; --txt: #d7e1ee; --dim: #7d8fa5; --acc: #4ade80; --acc2: #fbbf24; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--txt); font: 15px/1.6 -apple-system, 'Segoe UI', Roboto, sans-serif; }
+code, pre, .mono { font-family: 'SF Mono', Consolas, monospace; }
+a { color: var(--acc); text-decoration: none; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+nav { padding: 20px 0; border-bottom: 1px solid var(--line); }
+nav .wrap { display: flex; align-items: center; gap: 24px; }
+.logo { font-weight: 700; font-size: 18px; color: #fff; letter-spacing: -0.5px; }
+.logo span { color: var(--acc); }
+nav a { color: var(--dim); font-size: 13px; }
+nav a:hover { color: var(--txt); }
+.hero { padding: 80px 0 56px; }
+.hero h1 { font-size: 42px; line-height: 1.15; letter-spacing: -1px; color: #fff; max-width: 720px; }
+.hero h1 em { font-style: normal; color: var(--acc); }
+.hero p.sub { margin-top: 18px; color: var(--dim); font-size: 17px; max-width: 620px; }
+.badges { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+.badge { font-size: 12px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 20px; color: var(--dim); background: var(--panel); }
+.badge b { color: var(--txt); font-weight: 600; }
+section { padding: 44px 0; border-top: 1px solid var(--line); }
+h2 { font-size: 22px; color: #fff; margin-bottom: 20px; letter-spacing: -0.3px; }
+.status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.stat .v { font-size: 26px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--acc); margin-bottom: 12px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--acc); animation: pulse 2s infinite; }
+@keyframes pulse { 50% { opacity: 0.3; } }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+th { color: var(--dim); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+td.price { color: var(--acc2); font-weight: 600; white-space: nowrap; }
+.chain-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.chain { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 20px; min-width: 200px; }
+.chain .n { font-weight: 600; color: #fff; }
+.chain .s { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: 1px; }
+.pill.on { background: rgba(74, 222, 128, 0.15); color: var(--acc); }
+.pill.soon { background: rgba(251, 191, 36, 0.15); color: var(--acc2); }
+.tabs { display: flex; gap: 8px; margin-bottom: -1px; position: relative; z-index: 1; }
+.tab { padding: 9px 18px; font-size: 13px; color: var(--dim); background: transparent; border: 1px solid var(--line); border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; }
+.tab.on { color: #fff; background: var(--panel); }
+.pane { display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 0 10px 10px 10px; padding: 18px; }
+.pane.on { display: block; }
+pre { background: #0d1320; border: 1px solid var(--line); border-radius: 8px; padding: 14px; overflow-x: auto; font-size: 12.5px; line-height: 1.55; color: #b8c7db; }
+.note { font-size: 13px; color: var(--dim); margin-top: 10px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.step { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.step .num { font-size: 12px; color: var(--acc); font-weight: 700; }
+.step .t { font-weight: 600; color: #fff; margin: 6px 0; }
+.step .d { font-size: 13px; color: var(--dim); }
+.faq-item { border-bottom: 1px solid var(--line); padding: 16px 0; }
+.faq-item .q { font-weight: 600; color: #fff; cursor: pointer; }
+.faq-item .a { font-size: 14px; color: var(--dim); margin-top: 8px; display: none; }
+.faq-item.open .a { display: block; }
+footer { padding: 36px 0 60px; color: var(--dim); font-size: 13px; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+@media (max-width: 720px) { .status-grid, .steps { grid-template-columns: repeat(2, 1fr); } .hero h1 { font-size: 30px; } }
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <div class="logo">per<span>call</span></div>
+  <a href="#pricing">pricing</a>
+  <a href="#install">install</a>
+  <a href="#how">how it works</a>
+  <a href="#faq">faq</a>
+  <a href="https://github.com/percallio" target="_blank">github</a>
+</div></nav>
+
+<div class="wrap">
+<div class="hero">
+  <h1>AI agents, pay per call for <em>early-chain data</em>. USDC. No API key.</h1>
+  <p class="sub">percall runs keyless JSON-RPC and early-token data endpoints for AI agents on new chains. One HTTP 402, one USDC authorization, done — x402 protocol, sub-second finality, prepaid credits cut on-chain cost 92%.</p>
+  <div class="badges">
+    <div class="badge"><b>x402v2</b> · HTTP 402 native</div>
+    <div class="badge"><b>EIP-3009</b> · USDC authorization</div>
+    <div class="badge"><b>MCP</b> · one-line install</div>
+    <div class="badge"><b>prepaid</b> · /topup credits</div>
+  </div>
+</div>
+</div>
+
+<div class="wrap">
+<section id="status">
+  <div class="live"><div class="dot"></div>live from the endpoint</div>
+  <div class="status-grid">
+    <div class="stat"><div class="v" id="st-paid">—</div><div class="k">paid calls today</div></div>
+    <div class="stat"><div class="v" id="st-rev">—</div><div class="k">revenue today (USDC)</div></div>
+    <div class="stat"><div class="v" id="st-payers">—</div><div class="k">paying wallets</div></div>
+    <div class="stat"><div class="v" id="st-ok">—</div><div class="k">settle success</div></div>
+  </div>
+  <p class="note">pulled live from <code>GET /stats</code> — no dashboard is more honest than the ledger.</p>
+</section>
+
+<section id="chains">
+  <h2>chains</h2>
+  <div class="chain-row">
+    <div class="chain"><span class="n">Arc</span><span class="pill on">live</span><div class="s">chainId 5042 · Circle's stablecoin chain · USDC gas · ~1s blocks</div></div>
+    <div class="chain"><span class="n">MegaETH</span><span class="pill soon">soon</span><div class="s">chainId 4326 · 100k+ TPS · same endpoint shape, one new subdomain</div></div>
+    <div class="chain"><span class="n">every new chain we see</span><span class="pill soon">formula</span><div class="s">we monitor daily deployments — new chain = new percall instance = first agent-pay endpoint there</div></div>
+  </div>
+</section>
+
+<section id="pricing">
+  <h2>pricing</h2>
+  <table>
+    <tr><th>endpoint</th><th>examples</th><th>per call</th></tr>
+    <tr><td>light</td><td>eth_blockNumber, eth_gasPrice, eth_chainId</td><td class="price">$0.002</td></tr>
+    <tr><td>standard</td><td>eth_call, receipts, balances, estimates</td><td class="price">$0.003</td></tr>
+    <tr><td>heavy</td><td>eth_getLogs, batch, tracing</td><td class="price">$0.005</td></tr>
+    <tr><td>free tier</td><td>any method, 50 calls/day per wallet (<code>X-From</code> header)</td><td class="price">$0.00</td></tr>
+    <tr><td>prepaid credits</td><td>top up $1–$100 once via <code>/topup</code>, every call after is off-chain accounting</td><td class="price">~$0.0002 eff.</td></tr>
+  </table>
+  <p class="note">data endpoints (<code>/early</code> new-token triage, <code>/alerts</code> delta feed, <code>/audit</code> token hygiene) ship next week — same rails, higher margin data.</p>
+</section>
+
+<section id="install">
+  <h2>install</h2>
+  <div class="tabs">
+    <div class="tab on" data-t="0">MCP (Claude Desktop)</div>
+    <div class="tab" data-t="1">HTTP (any agent)</div>
+    <div class="tab" data-t="2">prepaid /topup</div>
+  </div>
+  <div class="pane on">
+<pre>{
+  "mcpServers": {
+    "percall-arc": {
+      "command": "python3",
+      "args": ["/path/to/percall_mcp.py"],
+      "env": {
+        "X402_MCP_URL": "https://API.example",
+        "X402_MCP_KEY": "0xyour-arc-wallet-key"
+      }
+    }
+  }
+}</pre>
+    <p class="note">percall_mcp.py is a zero-dependency stdio server (6 tools: block number, call, receipt, logs, balance, free). Your agent's Arc USDC wallet pays per call automatically — free tier kicks in until credits run out.</p>
+  </div>
+  <div class="pane">
+<pre># 1) any request answers with 402 + price
+curl -s -X POST https://API.example/arc/ \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
+
+# 2) sign a USDC transferWithAuthorization (EIP-712) for the quoted amount
+#    -> retry with the X-PAYMENT header (base64 payload)
+
+# or, skip signing for light use:
+curl -s -X POST https://API.example/arc/ \
+  -H 'X-From: 0xYourWallet' \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'   # 50 free/day</pre>
+  </div>
+  <div class="pane">
+<pre># once: sign ONE USDC authorization for your whole budget (24h-7d validity)
+curl -s -X POST https://API.example/topup \
+  -H 'Content-Type: application/json' \
+  -d '{"x402Version":2,"scheme":"exact","network":"5042",
+       "payload":{ from,to,vault, value:"1000000", validBefore, nonce, v, r, s }}'
+
+# -> settles on-chain in ~5s, credit granted
+# after: every call just carries X-From: 0xYourWallet
+#    (off-chain deduction, zero per-call gas, failed settles auto-revoke)</pre>
+    <p class="note">prepay is a prepaid card: the authorization is pulled exactly for the top-up amount, single-use nonce, expires per your validBefore.</p>
+  </div>
+</section>
+
+<section id="how">
+  <h2>how it works</h2>
+  <div class="steps">
+    <div class="step"><div class="num">01</div><div class="t">402 — price first</div><div class="d">every unpaid request returns HTTP 402 with the exact per-method price in USDC and the payment requirements. No keys, no accounts, no "contact sales".</div></div>
+    <div class="step"><div class="num">02</div><div class="t">sign — one authorization</div><div class="d">you sign a USDC EIP-3009 transferWithAuthorization for the amount. For regulars: sign once per week via /topup and never sign again per-call.</div></div>
+    <div class="step"><div class="num">03</div><div class="t">settle — on-chain, ~5s</div><div class="d">the payment settles to our vault on Arc (~1s blocks, USDC is the gas token). Failed settles auto-revoke your credit. Margin stays ~95% because gas is amortized over credits.</div></div>
+  </div>
+</section>
+
+<section id="faq">
+  <h2>faq</h2>
+  <div class="faq-item"><div class="q">what is x402?</div><div class="a">An open payments protocol built on the HTTP 402 "Payment Required" status code (Coinbase, x402-foundation, 6.6k★, with working groups from Google/Solana-ecosystem contributors). The buyer signs a token authorization; the seller (or a facilitator) settles on-chain. We self-facilitate: verification is done by us, settlement is a direct USDC pull — no middleman custody.</div></div>
+  <div class="faq-item"><div class="q">what is "USDC" on Arc — is it the same USDC?</div><div class="a">Arc (chainId 5042) is Circle's EVM chain where USDC is the native gas token. The same balance is readable as native (18 dec) or ERC20 (6 dec) — one ledger, two views. Your USDC pays for data <i>and</i> for the gas that settles it. No wrapping, no bridging.</div></div>
+  <div class="faq-item"><div class="q">where does my USDC go? can it be taken twice?</div><div class="a">To a public vault address, exactly the amount you authorized, once per nonce (EIP-3009 nonces are single-use on-chain). Per-call payments settle the call's amount; /topup settles your top-up amount. If our settlement tx reverts, your credit is auto-revoked — you pay for what you got.</div></div>
+  <div class="faq-item"><div class="q">why is it this cheap?</div><div class="a">We run our own multi-endpoint free RPC pool (rotation across keyless public endpoints + paid fallbacks), so upstream cost ≈ 0, and prepaid credits amortize one ~112k-gas settlement across hundreds of calls. The price is for availability + early data, not for gas.</div></div>
+  <div class="faq-item"><div class="q">isn't RPC free everywhere?</div><div class="a">Free RPCs need keys, project approvals, and rate limits — friction every agent framework has to solve. x402 removes the account: capability = a wallet. And on new chains the free endpoints are scarce and flaky; paid-per-call with 99%+ settlement success is a different product. The data endpoints (/early, /alerts, /audit) are where the value concentrates.</div></div>
+  <div class="faq-item"><div class="q">which chains next?</div><div class="a">MegaETH (4326) is in test, then whatever our deployment radar flags: a new EVM chain with a stablecoin gas token gets a percall instance within hours. Each chain = its own subdomain and bazaar listing.</div></div>
+</section>
+</div>
+</div>
+
+<footer><div class="wrap">
+  <div>percall — pay per call, for agents, on early chains.</div>
+  <div><a href="https://github.com/percallio">github</a> · <a href="https://x.com/percall">x</a> · <a href="/#install">docs</a></div>
+</div></footer>
+
+<script>
+const API = "https://were-voted-cleaners-breakdown.trycloudflare.com";
+// tabs
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelectorAll('.pane')[+t.dataset.t].classList.add('on');
+});
+// faq
+document.querySelectorAll('.faq-item .q').forEach(q => q.onclick = () => q.parentElement.classList.toggle('open'));
+// live stats (CORS open on the endpoint)
+async function stats() {
+  try {
+    const r = await fetch(API + '/stats', { signal: AbortSignal.timeout(8000) });
+    const j = await r.json();
+    document.getElementById('st-paid').textContent = j.paid_calls ?? '—';
+    document.getElementById('st-rev').textContent = '$' + ((j.revenue_units ?? 0) / 1e6).toFixed(3);
+    document.getElementById('st-payers').textContent = Object.keys(j.payers ?? {}).length;
+    const tot = (j.settled ?? 0) + (j.settle_fail ?? 0);
+    document.getElementById('st-ok').textContent = tot ? Math.round(100 * (j.settled ?? 0) / tot) + '%' : '100%';
+    // also expose current API base for the MCP snippet
+    document.querySelectorAll('pre').forEach(p => { p.innerHTML = p.innerHTML.replaceAll('https://API.example', API); });
+  } catch (e) { console.log('stats not reachable from this browser:', e.message); }
+}
+stats(); setInterval(stats, 60000);
+</script>
+</body>
+</html>
