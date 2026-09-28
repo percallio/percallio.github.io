@@ -24,32 +24,42 @@
 |---|---|---|
 | light | 0.002 (2000 units) | eth_blockNumber, eth_getBalance, eth_getTransactionCount, most eth_get* |
 | standard | 0.003 (3000 units) | eth_call, eth_getTransactionReceipt, everything else known |
-| heavy | 0.005 (5000 units) | eth_getLogs, eth_getBlockByNumber, trace_*, debug_*, batch requests, unknown methods |
+| heavy | 0.005 (5000 units) | eth_getLogs, eth_getBlockByNumber, trace_*, debug_*, unknown methods |
+| batch | 0.002–0.05 (per item) | JSON-RPC array body — each item priced by its own method, sum capped at 50,000 units |
+| `/early` monitor | 0.01 (10,000 units) | monitoring snapshot: latest block + its txs; optional `address` + `window` (10–300s) = txs touching that address in the window |
+
+Machine-readable price list: `GET https://api.percall.io/plans` (free).
+
+**Weekly pack (recurring value):** `$5` = 5,000,000 units = 1,666 standard calls, 7-day TTL credit pool. Buy with one TWA: `POST /topup` with `"plan": "week"` and `value = 5000000`. Consumed before perpetual credits; stackable (extends expiry); zero on-chain ops per call.
 
 ## Free tier
 
 50 free calls/day per wallet. Identify with header `X-From: 0x<wallet>` and send the RPC POST **without** `X-PAYMENT` while free quota remains — no on-chain payment at all. When quota runs out the server returns 402 (start paying or wait for UTC reset).
 
-## How to pay (raw HTTP, x402 v1)
+## How to pay (raw HTTP, x402 v2)
 
 1. `POST https://api.percall.io/arc/` with your JSON-RPC body, no payment headers.
-2. Receive `402 Payment Required`. Body: `{"x402Version":1,"error":...,"accepts":[{...}]}`. Take `accepts[0]`:
-   - `maxAmountRequired`: price in USDC units (6 decimals)
+2. Receive `402 Payment Required`. The full payment payload is in the **`Payment-Required` response header** (base64-encoded JSON, x402Version 2) — also mirrored in the JSON body for convenience. Take `accepts[0]`:
+   - `amount`: price in USDC units (6 decimals); `maxAmountRequired` is the same (compat)
    - `payTo`: percall settlement wallet
    - `asset`: `0x3600000000000000000000000000000000000000` (Arc USDC precompile)
-   - `extra`: the EIP-3009 `transferWithAuthorization` template (from = your wallet, to = payTo, value, validAfter, validBefore, nonce)
-3. EIP-712 sign that authorization with your Arc wallet:
+   - `network`: `eip155:5042` (CAIP-2; echo it back unchanged)
+   - bazaar extension (`extensions.bazaar`): human/agent service description + JSON schemas for input/output
+3. Build the EIP-3009 `transferWithAuthorization` (from = your wallet, to = payTo, value = amount, validAfter/validBefore, fresh random 32-byte nonce) and EIP-712 sign it with your Arc wallet:
    - domain: `{name: "USDC", version: "2", chainId: 5042, verifyingContract: 0x3600000000000000000000000000000000000000}`
    - type: `TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)`
 4. Retry the same POST with header:
-   `X-PAYMENT: base64({"x402Version":1,"scheme":"exact","network":"5042","payload":{"signature":"0x..","authorization":{...signed TWA...}}})`
+   `X-PAYMENT: base64url({"x402Version":2,"scheme":"exact","network":"eip155:5042","payload":{from,to,value,validAfter,validBefore,nonce,v,r,s}})`
+   (`value` is a decimal string, `v` 27/28, `r`/`s` hex strings.)
 5. `200` = result + settlement in flight (typically < 15s on-chain). The TWA is valid ~600s; if the server restarts mid-flight it resumes settlement after reboot.
+
+`GET /early` (monitoring, 0.01 USDC) uses the identical dance; params via query (`?address=0x..&window=60`) or JSON body.
 
 ## Prepaid credits (`POST /topup`) — one authorization instead of one tx per call
 
 For steady usage, prepay once: same EIP-712 signature, but `to` = payTo and `value` = credit amount (1000..10,000,000 units = $0.01..$100), `validBefore` within 24h..7d, fresh random nonce. Then:
 
-- `POST /topup` with body `{"x402Version":1,"scheme":"exact","network":"5042","payload":{...TWA fields..., "v":"0x..","r":"0x..","s":"0x.."}}` → `200 {"ok":true,"credit_after":...}`. Settles on-chain ~10s; if settlement fails the credit is auto-revoked.
+- `POST /topup` with body `{"x402Version":2,"scheme":"exact","network":"eip155:5042","payload":{...TWA fields..., "v":"0x..","r":"0x..","s":"0x.."}}` → `200 {"ok":true,"credit_after":...}`. Add `"plan":"week"` and `value="5000000"` for the $5/7-day pack. Settles on-chain ~10s; if settlement fails the credit is auto-revoked.
 - All subsequent RPC calls: send `X-From: 0x<wallet>` (no `X-PAYMENT`) — credits are debited per call, zero on-chain ops per call.
 - When credits run out, the server returns 402 again (mix: credit calls + per-call payments is fine).
 
@@ -98,3 +108,6 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 - MCP: https://github.com/percallio/percall-mcp
 - Org: https://github.com/percallio
 - X: https://x.com/percalliox402
+- OpenAPI spec: https://api.percall.io/openapi.json
+- Plans & prices (JSON): https://api.percall.io/plans
+- /early monitor: GET https://api.percall.io/early?address=0x..&window=60 — $0.01 (free tier applies)
