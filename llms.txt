@@ -1,33 +1,100 @@
 # percall
 
-> Pay-per-call JSON-RPC and early-chain data for AI agents. USDC via x402. No API key.
-> percall 是面向 AI agent 的按次计费 RPC + 新链数据服务，USDC 按次支付（x402 协议），无需 API key。
+> Pay-per-call JSON-RPC + agent data on early chains. Keyless: no API key, no account, no approval. Agents pay in USDC per call via the x402 HTTP-402 protocol. First pay-per-call endpoint on Arc (chainId 5042, Circle's stablecoin chain, USDC = native gas).
 
 ## What it is
 
-- **Keyless RPC for agents**: JSON-RPC endpoint on **Arc** (chainId 5042, Circle's USDC-native EVM chain). Agents pay per call in USDC using the x402 HTTP 402 protocol (EIP-3009 transferWithAuthorization). No account, no API key, no rate-limit approval.
-- **MCP server**: `percall-mcp` — zero-dependency Python stdio MCP server (6 tools), one-line install in Claude Desktop / any MCP client.
-- **Pricing**: light call $0.002, standard $0.003, heavy (getlogs/trace) $0.005. Free tier: 50 calls/day per wallet. Prepaid credits via `/topup` (one USDC transferWithAuthorization per week instead of per call — ~92% gas savings).
-- **Early-chain data (planned)**: first token deployments (`/early`), deployer alerts (`/alerts`), contract audit-lite (`/audit-lite`) — the data agents need on chains days old.
-- **Roadmap chains**: MegaETH (chainId 4326) and the next stablecoin/EVM chain, same codebase parameterized per chain.
+`https://api.percall.io` is a public JSON-RPC gateway. An unauthenticated request returns HTTP 402 with a payment challenge; the client signs a USDC `transferWithAuthorization` (EIP-3009, gasless for the payer) and retries; the call executes and payment settles on Arc within seconds. No API keys, no project approval, no rate-limit account.
 
-## Endpoints
+- Base URL: `https://api.percall.io`
+- RPC endpoint: `POST /arc/` (JSON-RPC 2.0, Arc mainnet, chainId 5042 / hex 0x13b2)
+- Health: `GET /health` (no auth)
+- Stats: `GET /stats` (no auth, live revenue counters)
+- Prepaid top-up: `POST /topup` (see below)
+- MCP server (for agent frameworks): https://github.com/percallio/percall-mcp
 
-- `POST /arc/` — Arc mainnet JSON-RPC (402-priced per method tier)
-- `POST /topup` — prepaid credits (x402 TWA, validBefore ≤ 7d)
-- `GET /stats` — public live stats (calls, revenue, uptime)
-- `GET /health` — liveness
+## What the client needs
 
-Live status: https://percall.io/ · Site: https://percall.io/
+1. An EOA wallet with **USDC on Arc** (chainId 5042). The payer never pays gas — payment is an EIP-3009 authorization that percall settles; only the USDC balance matters.
+2. Any HTTP client. No account, no key issuance.
 
-## Install (MCP)
+## Pricing (per call, USDC, 6 decimals)
 
-See https://github.com/percallio/percall-mcp (Claude Desktop / Cursor / any MCP client config snippet).
+| Tier | Price | Methods |
+|---|---|---|
+| light | 0.002 (2000 units) | eth_blockNumber, eth_getBalance, eth_getTransactionCount, most eth_get* |
+| standard | 0.003 (3000 units) | eth_call, eth_getTransactionReceipt, everything else known |
+| heavy | 0.005 (5000 units) | eth_getLogs, eth_getBlockByNumber, trace_*, debug_*, batch requests, unknown methods |
+
+## Free tier
+
+50 free calls/day per wallet. Identify with header `X-From: 0x<wallet>` and send the RPC POST **without** `X-PAYMENT` while free quota remains — no on-chain payment at all. When quota runs out the server returns 402 (start paying or wait for UTC reset).
+
+## How to pay (raw HTTP, x402 v1)
+
+1. `POST https://api.percall.io/arc/` with your JSON-RPC body, no payment headers.
+2. Receive `402 Payment Required`. Body: `{"x402Version":1,"error":...,"accepts":[{...}]}`. Take `accepts[0]`:
+   - `maxAmountRequired`: price in USDC units (6 decimals)
+   - `payTo`: percall settlement wallet
+   - `asset`: `0x3600000000000000000000000000000000000000` (Arc USDC precompile)
+   - `extra`: the EIP-3009 `transferWithAuthorization` template (from = your wallet, to = payTo, value, validAfter, validBefore, nonce)
+3. EIP-712 sign that authorization with your Arc wallet:
+   - domain: `{name: "USDC", version: "2", chainId: 5042, verifyingContract: 0x3600000000000000000000000000000000000000}`
+   - type: `TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)`
+4. Retry the same POST with header:
+   `X-PAYMENT: base64({"x402Version":1,"scheme":"exact","network":"5042","payload":{"signature":"0x..","authorization":{...signed TWA...}}})`
+5. `200` = result + settlement in flight (typically < 15s on-chain). The TWA is valid ~600s; if the server restarts mid-flight it resumes settlement after reboot.
+
+## Prepaid credits (`POST /topup`) — one authorization instead of one tx per call
+
+For steady usage, prepay once: same EIP-712 signature, but `to` = payTo and `value` = credit amount (1000..10,000,000 units = $0.01..$100), `validBefore` within 24h..7d, fresh random nonce. Then:
+
+- `POST /topup` with body `{"x402Version":1,"scheme":"exact","network":"5042","payload":{...TWA fields..., "v":"0x..","r":"0x..","s":"0x.."}}` → `200 {"ok":true,"credit_after":...}`. Settles on-chain ~10s; if settlement fails the credit is auto-revoked.
+- All subsequent RPC calls: send `X-From: 0x<wallet>` (no `X-PAYMENT`) — credits are debited per call, zero on-chain ops per call.
+- When credits run out, the server returns 402 again (mix: credit calls + per-call payments is fine).
+
+## MCP install (agents / Claude Desktop / Cursor)
+
+Zero-dependency Python MCP server (stdlib only):
+
+```
+git clone https://github.com/percallio/percall-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "percall": {
+      "command": "python3",
+      "args": ["/path/to/percall_mcp.py"],
+      "env": {
+        "X402_MCP_KEY": "0x<wallet_private_key_on_Arc>"
+      }
+    }
+  }
+}
+```
+
+Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transaction_receipt`, `get_logs`, `rpc_raw`. Payment is handled automatically by the server (it reads the 402 challenge, signs, retries). The key signs payments only; it is never sent anywhere except in payment payloads.
+
+## Errors
+
+| Code | Meaning | Action |
+|---|---|---|
+| 402 | unpaid / free quota used / TWA expired or invalid | sign the challenge in `accepts[0]` and retry (fresh TWA if `validBefore` passed) |
+| 400 | topup validation failed (bad sig/nonce/window/amount) | check the `error` string |
+| 502 | upstream RPC failure | retry (credits are auto-refunded on failure) |
+| 503 | concurrency gate (`retryAfter: 5`) | back off and retry |
+
+## Guarantees & model
+
+- percall settles the payer's TWA itself (it is the x402 facilitator); payer gas cost is always 0.
+- Per-wallet free quota: 50/day (UTC). Global free cap: 300/day.
+- Settlement: Arc mainnet, tip 2 Gwei (USDC-gas), sub-second blocks; failed settlements refund/free-call accounting is automatic.
 
 ## Links
 
-- Website: https://percall.io/
-- MCP server: https://github.com/percallio/percall-mcp
-- GitHub: https://github.com/percallio
+- Site: https://percall.io
+- MCP: https://github.com/percallio/percall-mcp
+- Org: https://github.com/percallio
 - X: https://x.com/percalliox402
-- Protocol: x402 (402payments / x402 repo on GitHub) · Bazaar (x402 marketplace, service listed)

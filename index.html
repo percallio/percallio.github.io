@@ -165,7 +165,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
       "command": "python3",
       "args": ["/path/to/percall_mcp.py"],
       "env": {
-        "X402_MCP_URL": "https://API.example",
+        "X402_MCP_URL": "https://api.percall.io",
         "X402_MCP_KEY": "0xyour-arc-wallet-key"
       }
     }
@@ -175,7 +175,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
   </div>
   <div class="pane">
 <pre># 1) any request answers with 402 + price
-curl -s -X POST https://API.example/arc/ \
+curl -s -X POST https://api.percall.io/arc/ \
   -H 'Content-Type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
 
@@ -183,14 +183,14 @@ curl -s -X POST https://API.example/arc/ \
 #    -> retry with the X-PAYMENT header (base64 payload)
 
 # or, skip signing for light use:
-curl -s -X POST https://API.example/arc/ \
+curl -s -X POST https://api.percall.io/arc/ \
   -H 'X-From: 0xYourWallet' \
   -H 'Content-Type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'   # 50 free/day</pre>
   </div>
   <div class="pane">
 <pre># once: sign ONE USDC authorization for your whole budget (24h-7d validity)
-curl -s -X POST https://API.example/topup \
+curl -s -X POST https://api.percall.io/topup \
   -H 'Content-Type: application/json' \
   -d '{"x402Version":2,"scheme":"exact","network":"5042",
        "payload":{ from,to,vault, value:"1000000", validBefore, nonce, v, r, s }}'
@@ -225,7 +225,7 @@ curl -s -X POST https://API.example/topup \
 
 <footer><div class="wrap">
   <div>percall — pay per call, for agents, on early chains.</div>
-  <div><a href="https://github.com/percallio">github</a> · <a href="https://x.com/percalliox402">x</a> · <a href="/#install">docs</a></div>
+  <div><a href="https://github.com/percallio">github</a> · <a href="https://x.com/percalliox402">x</a> · <a href="/#install">docs</a> · <a href="/llms.txt">for agents: llms.txt</a> · <a href="/AGENTS.md">AGENTS.md</a></div>
 </div></footer>
 
 <script>
@@ -250,7 +250,7 @@ async function stats() {
     const tot = (j.settled ?? 0) + (j.settle_fail ?? 0);
     document.getElementById('st-ok').textContent = tot ? Math.round(100 * (j.settled ?? 0) / tot) + '%' : '100%';
     // also expose current API base for the MCP snippet
-    document.querySelectorAll('pre').forEach(p => { p.innerHTML = p.innerHTML.replaceAll('https://API.example', API); });
+    document.querySelectorAll('pre').forEach(p => { p.innerHTML = p.innerHTML.replaceAll('https://api.percall.io', API); });
   } catch (e) { console.log('stats not reachable from this browser:', e.message); }
 }
 stats(); setInterval(stats, 60000);
