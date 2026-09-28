@@ -6,7 +6,7 @@ Keyless JSON-RPC + early-chain data for AI agents. USDC via [x402](https://githu
 
 - Live: **Arc** (chainId 5042) · Soon: **MegaETH** (chainId 4326)
 - [percall-mcp](https://github.com/percallio/percall-mcp) — zero-dependency MCP server (one-line install)
-- [Site](https://percallio.github.io/) · [X](https://x.com/percalliox402)
+- [Site](https://percall.io/) · [X](https://x.com/percalliox402)
 
 ## Repo
 
