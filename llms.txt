@@ -29,6 +29,10 @@
 | `/early` monitor | 0.01 (10,000 units) | monitoring snapshot: latest block + its txs; optional `address` + `window` (10–300s) = txs touching that address in the window |
 | `/alerts` delta feed | 0.005 (5,000 units) | address USDC in/out flows over a window + live balance. Built for 30–60s polling: `?address=0x..&window=60`. Served from a rolling in-memory buffer (sub-second). |
 | `/audit` token check | 0.02 (20,000 units) | token hygiene report: name/symbol/decimals/supply, owner + renounced, proxy/upgradeable, 1h volume, risk flags, verdict `pass`/`warn`/`fail`. `?address=0x<token>` |
+| `/whales` flow ranking | 0.005 (5,000 units) | top 20 USDC flow addresses in a window (bridge/DEX/whale detection). `?window=3600`. Sub-second (rolling buffer). |
+| `/deployments` new contracts | 0.01 (10,000 units) | fresh smart-contract deployments in a window — early token/contract discovery. `?window=3600`. |
+| `/wallet-report` profile | 0.05 (50,000 units) | one-call address risk/flow profile: USDC balance + window in/out + top 5 counterparties (contract-checked) + risk flags. Replaces ~8 RPC round-trips. `?address=0x..&window=86400`. |
+| `/token-report` full report | 0.05 (50,000 units) | everything in `/audit` plus top-10 recipient holders and flow concentration. `?address=0x<token>` |
 
 Machine-readable price list: `GET https://api.percall.io/plans` (free).
 
@@ -57,7 +61,7 @@ Machine-readable price list: `GET https://api.percall.io/plans` (free).
 
 `GET /early` (monitoring, 0.01 USDC) uses the identical dance; params via query (`?address=0x..&window=60`) or JSON body.
 
-`GET /alerts?address=0x..&window=60` (0.005 USDC) and `GET /audit?address=0x<token>` (0.02 USDC) also use the same x402 dance (or the free tier via `X-From`). All three data endpoints accept a JSON POST body as well as query params.
+`GET /alerts?address=0x..&window=60` (0.005 USDC), `GET /whales?window=3600` (0.005), `GET /deployments?window=3600` (0.01), `GET /wallet-report?address=0x..` (0.05), `GET /audit?address=0x<token>` (0.02), and `GET /token-report?address=0x<token>` (0.05) also use the same x402 dance (or the free tier via `X-From`). All seven data/report endpoints accept a JSON POST body as well as query params. The two $0.05 report endpoints are the "one call replaces N round-trips" products: prefer them when you need an address or token profile instead of assembling it from raw calls.
 
 ## Prepaid credits (`POST /topup`) — one authorization instead of one tx per call
 
@@ -117,3 +121,7 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 - /early monitor: GET https://api.percall.io/early?address=0x..&window=60 — $0.01 (free tier applies)
 - /alerts delta feed: GET https://api.percall.io/alerts?address=0x..&window=60 — $0.005 (polling-friendly, free tier applies)
 - /audit token check: GET https://api.percall.io/audit?address=0x<token> — $0.02 hygiene report (free tier applies)
+- /whales flow ranking: GET https://api.percall.io/whales?window=3600 — $0.005 top-20 USDC flow addresses (free tier applies)
+- /deployments new contracts: GET https://api.percall.io/deployments?window=3600 — $0.01 fresh contract feed (free tier applies)
+- /wallet-report profile: GET https://api.percall.io/wallet-report?address=0x..&window=86400 — $0.05 one-call address risk/flow profile (free tier applies)
+- /token-report full report: GET https://api.percall.io/token-report?address=0x<token> — $0.05 audit + top holders + concentration (free tier applies)
