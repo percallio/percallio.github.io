@@ -147,11 +147,13 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
     <tr><td>heavy</td><td>eth_getLogs, tracing</td><td class="price">$0.005</td></tr>
     <tr><td>batch</td><td>JSON-RPC array — priced per item, capped at $0.05</td><td class="price">$0.002–0.05</td></tr>
     <tr><td><code>/early</code> monitor</td><td>latest block + tx snapshot; optional address window watch (1s blocks)</td><td class="price">$0.01</td></tr>
+    <tr><td><code>/alerts</code> delta feed</td><td>address USDC in/out flows + live balance over a window — built for 30–60s polling, sub-second</td><td class="price">$0.005</td></tr>
+    <tr><td><code>/audit</code> token check</td><td>token hygiene report: metadata, owner, proxy, 1h volume, risk flags, verdict</td><td class="price">$0.02</td></tr>
     <tr><td>free tier</td><td>any endpoint, 50 calls/day per wallet (<code>X-From</code> header)</td><td class="price">$0.00</td></tr>
     <tr><td>prepaid credits</td><td>top up $1–$100 once via <code>/topup</code>, every call after is off-chain accounting</td><td class="price">~$0.0002 eff.</td></tr>
     <tr><td><strong>weekly pack</strong></td><td><code>$5</code> = 1,666 standard calls, 7-day TTL credit pool, stackable, zero per-call gas</td><td class="price">$5.00</td></tr>
   </table>
-  <p class="note"><code>/early</code> is live now (<code>GET /plans</code> for the machine-readable price list). <code>/alerts</code> (delta feed) and <code>/audit</code> (token hygiene) ship next.</p>
+  <p class="note">All three data endpoints are live. <code>GET /plans</code> for the machine-readable price list.</p>
 </section>
 
 <section id="install">

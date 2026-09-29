@@ -27,6 +27,8 @@
 | heavy | 0.005 (5000 units) | eth_getLogs, eth_getBlockByNumber, trace_*, debug_*, unknown methods |
 | batch | 0.002–0.05 (per item) | JSON-RPC array body — each item priced by its own method, sum capped at 50,000 units |
 | `/early` monitor | 0.01 (10,000 units) | monitoring snapshot: latest block + its txs; optional `address` + `window` (10–300s) = txs touching that address in the window |
+| `/alerts` delta feed | 0.005 (5,000 units) | address USDC in/out flows over a window + live balance. Built for 30–60s polling: `?address=0x..&window=60`. Served from a rolling in-memory buffer (sub-second). |
+| `/audit` token check | 0.02 (20,000 units) | token hygiene report: name/symbol/decimals/supply, owner + renounced, proxy/upgradeable, 1h volume, risk flags, verdict `pass`/`warn`/`fail`. `?address=0x<token>` |
 
 Machine-readable price list: `GET https://api.percall.io/plans` (free).
 
@@ -54,6 +56,8 @@ Machine-readable price list: `GET https://api.percall.io/plans` (free).
 5. `200` = result + settlement in flight (typically < 15s on-chain). The TWA is valid ~600s; if the server restarts mid-flight it resumes settlement after reboot.
 
 `GET /early` (monitoring, 0.01 USDC) uses the identical dance; params via query (`?address=0x..&window=60`) or JSON body.
+
+`GET /alerts?address=0x..&window=60` (0.005 USDC) and `GET /audit?address=0x<token>` (0.02 USDC) also use the same x402 dance (or the free tier via `X-From`). All three data endpoints accept a JSON POST body as well as query params.
 
 ## Prepaid credits (`POST /topup`) — one authorization instead of one tx per call
 
@@ -111,3 +115,5 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 - OpenAPI spec: https://api.percall.io/openapi.json
 - Plans & prices (JSON): https://api.percall.io/plans
 - /early monitor: GET https://api.percall.io/early?address=0x..&window=60 — $0.01 (free tier applies)
+- /alerts delta feed: GET https://api.percall.io/alerts?address=0x..&window=60 — $0.005 (polling-friendly, free tier applies)
+- /audit token check: GET https://api.percall.io/audit?address=0x<token> — $0.02 hygiene report (free tier applies)
