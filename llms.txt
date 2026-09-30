@@ -34,7 +34,7 @@
 | `/wallet-report` profile | 0.05 (50,000 units) | one-call address risk/flow profile: USDC balance + window in/out + top 5 counterparties (contract-checked) + risk flags. Replaces ~8 RPC round-trips. `?address=0x..&window=86400`. |
 | `/token-report` full report | 0.05 (50,000 units) | everything in `/audit` plus top-10 recipient holders and flow concentration. `?address=0x<token>` |
 
-Machine-readable price list: `GET https://api.percall.io/plans` (free).
+Payment failures are machine-readable: a rejected `X-PAYMENT` returns HTTP 402 whose body carries a stable error code you can switch on to self-heal — `invalid_payment_format`, `invalid_payment_scheme`, `invalid_payment_payto`, `invalid_payment_amount`, `invalid_payment_expired`, `invalid_payment_early`, `invalid_payment_signature`, `invalid_payment_signer` (e.g. `expired` → re-sign with a fresh `validBefore`; `amount` → your value exceeded the quoted price; `signature`/`signer` → key mismatch).
 
 **Weekly pack (recurring value):** `$5` = 5,000,000 units = 1,666 standard calls, 7-day TTL credit pool. Buy with one TWA: `POST /topup` with `"plan": "week"` and `value = 5000000`. Consumed before perpetual credits; stackable (extends expiry); zero on-chain ops per call.
 
@@ -117,6 +117,7 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 - Org: https://github.com/percallio
 - X: https://x.com/percalliox402
 - OpenAPI spec: https://api.percall.io/openapi.json
+- **x402 discovery manifest (machine-readable): https://api.percall.io/x402.json** — every endpoint + price + params + free tier + prepay + SLA. Also served at `/.well-known/x402.json`.
 - Plans & prices (JSON): https://api.percall.io/plans
 - /early monitor: GET https://api.percall.io/early?address=0x..&window=60 — $0.01 (free tier applies)
 - /alerts delta feed: GET https://api.percall.io/alerts?address=0x..&window=60 — $0.005 (polling-friendly, free tier applies)
