@@ -116,6 +116,7 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 - MCP: https://github.com/percallio/percall-mcp
 - Org: https://github.com/percallio
 - X: https://x.com/percalliox402
+- Contact: support@percall.io (general) · security@percall.io (vulnerability reports) · hello@percall.io (partnerships/grants)
 - OpenAPI spec: https://api.percall.io/openapi.json
 - **x402 discovery manifest (machine-readable): https://api.percall.io/x402.json** — every endpoint + price + params + free tier + prepay + SLA. Also served at `/.well-known/x402.json`.
 - Plans & prices (JSON): https://api.percall.io/plans

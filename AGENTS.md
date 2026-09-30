@@ -27,3 +27,10 @@ percall is a keyless pay-per-call JSON-RPC gateway for AI agents.
 - `percallio.github.io` — this site (GitHub Pages)
 - `percall-mcp` — the MCP server (single file, stdlib only)
 - `percall` — docs/profile
+
+## Contact
+
+- General / integrations: **support@percall.io**
+- Security / vulnerability reports: **security@percall.io** (reproducible on the free tier, no funds needed)
+- Partnerships / grants: **hello@percall.io**
+- X: [@percalliox402](https://x.com/percalliox402) · GitHub: [percallio](https://github.com/percallio)
