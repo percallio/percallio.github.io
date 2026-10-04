@@ -39,7 +39,7 @@
 
 Payment failures are machine-readable: a rejected `X-PAYMENT` returns HTTP 402 whose body carries a stable error code you can switch on to self-heal — `invalid_payment_format`, `invalid_payment_scheme`, `invalid_payment_payto`, `invalid_payment_amount`, `invalid_payment_expired`, `invalid_payment_early`, `invalid_payment_signature`, `invalid_payment_signer` (e.g. `expired` → re-sign with a fresh `validBefore`; `amount` → your value exceeded the quoted price; `signature`/`signer` → key mismatch).
 
-**Weekly pack (recurring value):** `$5` = 5,000,000 units = 1,666 standard calls, 7-day TTL credit pool. Buy with one TWA: `POST /topup` with `"plan": "week"` and `value = 5000000`. Consumed before perpetual credits; stackable (extends expiry); zero on-chain ops per call.
+**Packs (recurring value):** `$5` weekly = 5,000,000 units = 1,666 standard calls, 7-day TTL credit pool — `POST /topup` with `"plan": "week"` and `value = 5000000`. `$20` monthly = 20,000,000 units = 6,666 standard calls, 30-day TTL credit pool — `"plan": "month"` and `value = 20000000`, for agents that poll on a steady state (weekly cadence of one TWA signature, no per-call gas, no per-call auth). Consumed before perpetual credits; stackable (extends expiry); zero on-chain ops per call.
 
 ## Free tier
 
@@ -72,7 +72,7 @@ Payment failures are machine-readable: a rejected `X-PAYMENT` returns HTTP 402 w
 
 For steady usage, prepay once: same EIP-712 signature, but `to` = payTo and `value` = credit amount (1000..10,000,000 units = $0.01..$100), `validBefore` within 24h..7d, fresh random nonce. Then:
 
-- `POST /topup` with body `{"x402Version":2,"scheme":"exact","network":"eip155:5042","payload":{...TWA fields..., "v":"0x..","r":"0x..","s":"0x.."}}` → `200 {"ok":true,"credit_after":...}`. Add `"plan":"week"` and `value="5000000"` for the $5/7-day pack. Settles on-chain ~10s; if settlement fails the credit is auto-revoked.
+- `POST /topup` with body `{"x402Version":2,"scheme":"exact","network":"eip155:5042","payload":{...TWA fields..., "v":"0x..","r":"0x..","s":"0x.."}}` → `200 {"ok":true,"credit_after":...}`. Add `"plan":"week"` and `value="5000000"` for the $5/7-day pack, or `"plan":"month"` and `value="20000000"` for the $20/30-day pack. Settles on-chain ~10s; if settlement fails the credit is auto-revoked.
 - All subsequent RPC calls: send `X-From: 0x<wallet>` (no `X-PAYMENT`) — credits are debited per call, zero on-chain ops per call.
 - When credits run out, the server returns 402 again (mix: credit calls + per-call payments is fine).
 
