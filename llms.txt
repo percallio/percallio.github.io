@@ -33,6 +33,7 @@
 | `/deployments` new contracts | 0.01 (10,000 units) | fresh smart-contract deployments in a window — early token/contract discovery. `?window=3600`. |
 | `/wallet-report` profile | 0.05 (50,000 units) | one-call address risk/flow profile: USDC balance + window in/out + top 5 counterparties (contract-checked) + risk flags. Replaces ~8 RPC round-trips. `?address=0x..&window=86400`. |
 | `/token-report` full report | 0.05 (50,000 units) | everything in `/audit` plus top-10 recipient holders and flow concentration. `?address=0x<token>` |
+| `/meme` trending + scores | 0.01 (10,000 units) | trending memecoins per chain (GMGN: price, 1h/24h change, volume, liquidity, market cap) joined with live model scores S/T/rug where available. `?chain=solana|base|bsc|arc|all&limit=1-200`. Refreshed ~10 min. |
 
 Payment failures are machine-readable: a rejected `X-PAYMENT` returns HTTP 402 whose body carries a stable error code you can switch on to self-heal — `invalid_payment_format`, `invalid_payment_scheme`, `invalid_payment_payto`, `invalid_payment_amount`, `invalid_payment_expired`, `invalid_payment_early`, `invalid_payment_signature`, `invalid_payment_signer` (e.g. `expired` → re-sign with a fresh `validBefore`; `amount` → your value exceeded the quoted price; `signature`/`signer` → key mismatch).
 
@@ -61,7 +62,7 @@ Payment failures are machine-readable: a rejected `X-PAYMENT` returns HTTP 402 w
 
 `GET /early` (monitoring, 0.01 USDC) uses the identical dance; params via query (`?address=0x..&window=60`) or JSON body.
 
-`GET /alerts?address=0x..&window=60` (0.005 USDC), `GET /whales?window=3600` (0.005), `GET /deployments?window=3600` (0.01), `GET /wallet-report?address=0x..` (0.05), `GET /audit?address=0x<token>` (0.02), and `GET /token-report?address=0x<token>` (0.05) also use the same x402 dance (or the free tier via `X-From`). All seven data/report endpoints accept a JSON POST body as well as query params. The two $0.05 report endpoints are the "one call replaces N round-trips" products: prefer them when you need an address or token profile instead of assembling it from raw calls.
+`GET /alerts?address=0x..&window=60` (0.005 USDC), `GET /whales?window=3600` (0.005), `GET /deployments?window=3600` (0.01), `GET /wallet-report?address=0x..` (0.05), `GET /audit?address=0x<token>` (0.02), `GET /meme?chain=solana` (0.01), and `GET /token-report?address=0x<token>` (0.05) also use the same x402 dance (or the free tier via `X-From`). All eight data/report endpoints accept a JSON POST body as well as query params. The two $0.05 report endpoints are the "one call replaces N round-trips" products: prefer them when you need an address or token profile instead of assembling it from raw calls.
 
 ## Prepaid credits (`POST /topup`) — one authorization instead of one tx per call
 
@@ -127,3 +128,4 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 - /deployments new contracts: GET https://api.percall.io/deployments?window=3600 — $0.01 fresh contract feed (free tier applies)
 - /wallet-report profile: GET https://api.percall.io/wallet-report?address=0x..&window=86400 — $0.05 one-call address risk/flow profile (free tier applies)
 - /token-report full report: GET https://api.percall.io/token-report?address=0x<token> — $0.05 audit + top holders + concentration (free tier applies)
+- /meme trending + scores: GET https://api.percall.io/meme?chain=solana — $0.01 latest GMGN trending batch (price/1h/24h/volume/liq/mcap) joined with live S/T/rug model scores; ?chain=solana|base|bsc|arc|all (free tier applies)
