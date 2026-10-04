@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>percall — pay per call. agent data on early chains.</title>
 <meta name="description" content="Keyless Arc & MegaETH JSON-RPC + early-chain data for AI agents. Pay per call in USDC via x402. No API key, no project approval, prepaid credits.">
-<meta name="keywords" content="x402, MCP server, Arc, chainId 5042, MegaETH, 4326, pay per call, agent payments, USDC, JSON-RPC, no API key, stablecoin chain, early chain data, token deployments, AI agent infrastructure">
+<meta name="keywords" content="x402, MCP server, Arc, chainId 5042, Base, chainId 8453, MegaETH, 4326, pay per call, agent payments, USDC, JSON-RPC, no API key, stablecoin chain, early chain data, token deployments, AI agent infrastructure">
 <link rel="canonical" href="https://percall.io/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0e14'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='20' font-weight='700' fill='%234ade80' text-anchor='middle'%3Ep%3C/text%3E%3C/svg%3E">
 <meta property="og:type" content="website">
@@ -23,7 +23,7 @@
     {"@type": "Organization", "@id": "https://percall.io/#org", "name": "percall", "url": "https://percall.io/", "description": "Pay-per-call JSON-RPC and early-chain data for AI agents on new chains (Arc, MegaETH). USDC via x402, no API key.", "sameAs": ["https://github.com/percallio", "https://x.com/percalliox402"]},
     {"@type": "WebSite", "url": "https://percall.io/", "name": "percall", "publisher": {"@id": "https://percall.io/#org"}},
     {"@type": "SoftwareApplication", "name": "percall-mcp", "operatingSystem": "any", "applicationCategory": "DeveloperApplication", "url": "https://github.com/percallio/percall-mcp", "description": "Zero-dependency MCP server for percall: Arc (chainId 5042) block data, eth_call, receipts, logs, balances. Automatic x402 USDC payment per call.", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD", "description": "Free tier: 50 calls/day per wallet; then $0.002-$0.005 per call in USDC"}},
-    {"@type": "Product", "name": "Percall Arc agent data & keyless RPC", "description": "Keyless JSON-RPC endpoint for AI agents on Arc (chainId 5042, Circle's stablecoin chain). Per-call pricing in native USDC via the x402 HTTP 402 protocol and EIP-3009 transferWithAuthorization. Free tier of 50 calls/day per wallet; prepaid credits via /topup.", "brand": {"@type": "Brand", "name": "percall"}, "offers": {"@type": "Offer", "priceSpecification": [{"@type": "UnitPriceSpecification", "price": "0.002", "priceCurrency": "USD", "unitText": "light call"}, {"@type": "UnitPriceSpecification", "price": "0.003", "priceCurrency": "USD", "unitText": "standard call"}, {"@type": "UnitPriceSpecification", "price": "0.005", "priceCurrency": "USD", "unitText": "heavy call"}]}},
+    {"@type": "Product", "name": "Percall Arc agent data & keyless RPC", "description": "Keyless JSON-RPC endpoint for AI agents on Arc (chainId 5042, Circle's stablecoin chain) and Base mainnet (chainId 8453). Per-call pricing in USDC via the x402 HTTP 402 protocol and EIP-3009 transferWithAuthorization. Free tier of 50 calls/day per wallet; prepaid credits via /topup.", "brand": {"@type": "Brand", "name": "percall"}, "offers": {"@type": "Offer", "priceSpecification": [{"@type": "UnitPriceSpecification", "price": "0.002", "priceCurrency": "USD", "unitText": "light call"}, {"@type": "UnitPriceSpecification", "price": "0.003", "priceCurrency": "USD", "unitText": "standard call"}, {"@type": "UnitPriceSpecification", "price": "0.005", "priceCurrency": "USD", "unitText": "heavy call"}]}},
     {"@type": "FAQPage", "mainEntity": [
       {"@type": "Question", "name": "What is x402?", "acceptedAnswer": {"@type": "Answer", "text": "x402 is an open payments protocol built on the HTTP 402 'Payment Required' status code. The buyer signs a token authorization (on Ethereum chains, a USDC transferWithAuthorization per EIP-3009); the seller verifies and settles on-chain. percall self-facilitates: no middleman custody, payment goes directly to a public vault for exactly the amount authorized."}},
       {"@type": "Question", "name": "Why would I pay for RPC when free endpoints exist?", "acceptedAnswer": {"@type": "Answer", "text": "Free RPCs require API keys, project approvals and rate limits — friction that agent frameworks must solve. On new chains free endpoints are scarce and flaky. x402 makes capability equal to holding a wallet: no account, no key, no approval. Per-call billing means agents only pay for what they use, and prepaid credits make steady workloads nearly gas-free."}},
@@ -133,6 +133,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
   <h2>chains</h2>
   <div class="chain-row">
     <div class="chain"><span class="n">Arc</span><span class="pill on">live</span><div class="s">chainId 5042 · Circle's stablecoin chain · USDC gas · ~1s blocks</div></div>
+    <div class="chain"><span class="n">Base</span><span class="pill on">live</span><div class="s">chainId 8453 · the main x402 chain · native USDC (EIP-3009) · <code>/base/</code> endpoint, same pricing</div></div>
     <div class="chain"><span class="n">MegaETH</span><span class="pill soon">soon</span><div class="s">chainId 4326 · 100k+ TPS · same endpoint shape, one new subdomain</div></div>
     <div class="chain"><span class="n">every new chain we see</span><span class="pill soon">formula</span><div class="s">we monitor daily deployments — new chain = new percall instance = first agent-pay endpoint there</div></div>
   </div>
@@ -146,6 +147,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
     <tr><td>standard</td><td>eth_call, receipts, balances, estimates</td><td class="price">$0.003</td></tr>
     <tr><td>heavy</td><td>eth_getLogs, tracing</td><td class="price">$0.005</td></tr>
     <tr><td>batch</td><td>JSON-RPC array — priced per item, capped at $0.05</td><td class="price">$0.002–0.05</td></tr>
+    <tr><td><code>/base/</code> RPC</td><td>Base mainnet (chainId 8453) JSON-RPC — identical tiers to <code>/arc/</code>, x402 challenge carries eip155:8453 + Base USDC asset</td><td class="price">same</td></tr>
     <tr><td><code>/early</code> monitor</td><td>latest block + tx snapshot; optional address window watch (1s blocks)</td><td class="price">$0.01</td></tr>
     <tr><td><code>/alerts</code> delta feed</td><td>address USDC in/out flows + live balance over a window — built for 30–60s polling, sub-second</td><td class="price">$0.005</td></tr>
     <tr><td><code>/audit</code> token check</td><td>token hygiene report: metadata, owner, proxy, 1h volume, risk flags, verdict</td><td class="price">$0.02</td></tr>
@@ -158,7 +160,7 @@ footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; g
     <tr><td>prepaid credits</td><td>top up $1–$100 once via <code>/topup</code>, every call after is off-chain accounting</td><td class="price">~$0.0002 eff.</td></tr>
     <tr><td><strong>weekly pack</strong></td><td><code>$5</code> = 1,666 standard calls, 7-day TTL credit pool, stackable, zero per-call gas</td><td class="price">$5.00</td></tr>
   </table>
-  <p class="note">Eight data endpoints are live. <code>GET /plans</code> for the machine-readable price list.</p>
+  <p class="note">Two RPC chains (Arc + Base) and eight data endpoints are live. <code>GET /plans</code> for the machine-readable price list.</p>
 </section>
 
 <section id="install">

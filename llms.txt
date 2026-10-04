@@ -1,13 +1,13 @@
 # percall
 
-> Pay-per-call JSON-RPC + agent data on early chains. Keyless: no API key, no account, no approval. Agents pay in USDC per call via the x402 HTTP-402 protocol. First pay-per-call endpoint on Arc (chainId 5042, Circle's stablecoin chain, USDC = native gas).
+> Pay-per-call JSON-RPC + agent data. Keyless: no API key, no account, no approval. Agents pay in USDC per call via the x402 HTTP-402 protocol. First pay-per-call endpoint on Arc (chainId 5042, Circle's stablecoin chain, USDC = native gas) — now also on Base mainnet (chainId 8453, the main x402 chain).
 
 ## What it is
 
-`https://api.percall.io` is a public JSON-RPC gateway. An unauthenticated request returns HTTP 402 with a payment challenge; the client signs a USDC `transferWithAuthorization` (EIP-3009, gasless for the payer) and retries; the call executes and payment settles on Arc within seconds. No API keys, no project approval, no rate-limit account.
+`https://api.percall.io` is a public JSON-RPC gateway. An unauthenticated request returns HTTP 402 with a payment challenge; the client signs a USDC `transferWithAuthorization` (EIP-3009, gasless for the payer) and retries; the call executes and payment settles on-chain within seconds. No API keys, no project approval, no rate-limit account.
 
 - Base URL: `https://api.percall.io`
-- RPC endpoint: `POST /arc/` (JSON-RPC 2.0, Arc mainnet, chainId 5042 / hex 0x13b2)
+- RPC endpoints: `POST /arc/` (JSON-RPC 2.0, Arc mainnet, chainId 5042 / hex 0x13b2) and `POST /base/` (Base mainnet, chainId 8453 / hex 0x2105). Same pricing, same free tier; pick the chain you want data from.
 - Health: `GET /health` (no auth)
 - Stats: `GET /stats` (no auth, live revenue counters)
 - Prepaid top-up: `POST /topup` (see below)
@@ -15,7 +15,7 @@
 
 ## What the client needs
 
-1. An EOA wallet with **USDC on Arc** (chainId 5042). The payer never pays gas — payment is an EIP-3009 authorization that percall settles; only the USDC balance matters.
+1. An EOA wallet with **USDC on the target chain** — Arc (chainId 5042) for `/arc/`, Base (chainId 8453) for `/base/`. The payer never pays gas — payment is an EIP-3009 authorization that percall settles; only the USDC balance matters.
 2. Any HTTP client. No account, no key issuance.
 
 ## Pricing (per call, USDC, 6 decimals)
@@ -52,9 +52,11 @@ Payment failures are machine-readable: a rejected `X-PAYMENT` returns HTTP 402 w
    - `asset`: `0x3600000000000000000000000000000000000000` (Arc USDC precompile)
    - `network`: `eip155:5042` (CAIP-2; echo it back unchanged)
    - bazaar extension (`extensions.bazaar`): human/agent service description + JSON schemas for input/output
-3. Build the EIP-3009 `transferWithAuthorization` (from = your wallet, to = payTo, value = amount, validAfter/validBefore, fresh random 32-byte nonce) and EIP-712 sign it with your Arc wallet:
-   - domain: `{name: "USDC", version: "2", chainId: 5042, verifyingContract: 0x3600000000000000000000000000000000000000}`
+3. Build the EIP-3009 `transferWithAuthorization` (from = your wallet, to = payTo, value = amount, validAfter/validBefore, fresh random 32-byte nonce) and EIP-712 sign it with your wallet on the target chain:
+   - domain: `{name: "USDC", version: "2", chainId: 5042, verifyingContract: 0x3600000000000000000000000000000000000000}` (Arc)
+   - domain: `{name: "USDC", version: "1", chainId: 8453, verifyingContract: 0x833589fCD6edb6e08f4c7C32D4f71b54Ba029135}` (Base — native USDC; percall settles via the standard `executeAuthorization` calldata, gas in ETH)
    - type: `TransferWithAuthorization(address from,address to,uint256 value,uint256 validAfter,uint256 validBefore,bytes32 nonce)`
+   - The 402 challenge tells you which: `network` = `eip155:5042` / `eip155:8453`, `asset` = the chain's USDC address — echo both back unchanged.
 4. Retry the same POST with header:
    `X-PAYMENT: base64url({"x402Version":2,"scheme":"exact","network":"eip155:5042","payload":{from,to,value,validAfter,validBefore,nonce,v,r,s}})`
    (`value` is a decimal string, `v` 27/28, `r`/`s` hex strings.)
@@ -109,7 +111,7 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 
 - percall settles the payer's TWA itself (it is the x402 facilitator); payer gas cost is always 0.
 - Per-wallet free quota: 50/day (UTC). Global free cap: 300/day.
-- Settlement: Arc mainnet, tip 2 Gwei (USDC-gas), sub-second blocks; failed settlements refund/free-call accounting is automatic.
+- Settlement: Arc mainnet, tip 2 Gwei (USDC-gas), sub-second blocks; Base mainnet via standard EIP-3009 `executeAuthorization` (gas in ETH). Failed settlements refund/free-call accounting is automatic.
 
 ## Links
 
@@ -129,3 +131,4 @@ Tools: `chain_id` (free), `block_number`, `balance`, `eth_call`, `get_transactio
 - /wallet-report profile: GET https://api.percall.io/wallet-report?address=0x..&window=86400 — $0.05 one-call address risk/flow profile (free tier applies)
 - /token-report full report: GET https://api.percall.io/token-report?address=0x<token> — $0.05 audit + top holders + concentration (free tier applies)
 - /meme trending + scores: GET https://api.percall.io/meme?chain=solana — $0.01 latest GMGN trending batch (price/1h/24h/volume/liq/mcap) joined with live S/T/rug model scores; ?chain=solana|base|bsc|arc|all (free tier applies)
+- /base RPC: POST https://api.percall.io/base/ — Base mainnet (chainId 8453), same per-call pricing and free tier as /arc; x402 challenge carries network eip155:8453 + Base USDC asset
